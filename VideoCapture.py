@@ -3,6 +3,8 @@
 
 import cv2
 
+#check
+
 
 # capture = cv2.VideoCapture('rtsp://192.168.1.64/1')
 
