@@ -1,31 +1,28 @@
 '''version 1 __main2__'''
 
 
-import cv2
 
 #check
 
 
 # capture = cv2.VideoCapture('rtsp://192.168.1.64/1')
 
+import cv2
 
-capture = cv2.VideoCapture("rtsp:// 192.168.1.108/user =admin&password=admin123")
+cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
-# 192.168.1.108
-# capture = cv2.VideoCapture('rtsp://username:password@192.168.1.64/1')
-
-while True:
-    #sleep more if image detected in order not to capture the same image wont be detected
-
-    #sleep less if not
-    frame, ret = capture.read()
-    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cv2.imshow('frame', frame)
+print(cam.read())
+# cam = cv2.VideoCapture("rtsp://192.168.1.108/")
 
 
+while cam.isOpened():
 
-if cv2.waitKey(20) and 0xFF == ord('q'):
-    pass #break
+    ret, frame = cam.read()
+
+    if cv2.waitKey(10) == ord('q'):
+        break
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('frame', gray)
 
 cv2.destroyAllWindows()
 
