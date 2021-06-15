@@ -1,62 +1,115 @@
 '''version 1 __main2__'''
 
-
-
-#check
-
-
-# capture = cv2.VideoCapture('rtsp://192.168.1.64/1')
-
 import cv2
+import pytesseract
+import numpy as np
+from PIL import Image
+import imutils
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
-print(cam.read())
-# cam = cv2.VideoCapture("rtsp://192.168.1.108/")
-
-
+pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"  # your path may be different
 while cam.isOpened():
 
-    ret, frame = cam.read()
+    ret, img = cam.read()
 
     if cv2.waitKey(10) == ord('q'):
         break
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cv2.imshow('frame', gray)
+
+    img = cv2.resize(img, (620, 480))
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
+    # gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
+    kernel = np.ones((1, 1), np.uint8)
+    gray = cv2.dilate(gray, kernel, iterations=1)
+    gray = cv2.erode(gray, kernel, iterations=1)
+
+    edged = cv2.Canny(gray, 30, 200)  # Perform Edge detection
+
+    # find contours in the edged image, keep only the largest
+    # ones, and initialize our screen contour
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
+    screenCnt = None
+
+    # loop over our contours
+    for c in cnts:
+        # approximate the contour
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+
+        # if our approximated contour has four points, then
+        # we can assume that we have found our screen
+        if len(approx) == 4:
+            screenCnt = approx
+            break
+
+    if screenCnt is None:
+        detected = 0
+        print("No contour detected")
+
+    else:
+        detected = 1
+
+    if detected == 1:
+        cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
+
+    if detected == 1:
+        # Masking the part other than the number plate
+        mask = np.zeros(gray.shape, np.uint8)
+        new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1, )
+        new_image = cv2.bitwise_and(img, img, mask=mask)
+
+        # Now crop
+        (x, y) = np.where(mask == 255)
+        (topx, topy) = (np.min(x), np.min(y))
+        (bottomx, bottomy) = (np.max(x), np.max(y))
+        Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
+
+        # Read the number plate
+
+        text = pytesseract.image_to_string(Cropped, config='--psm 11')
+        # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
+
+        print(text)
+        # print(test)
+        cv2.imshow('Cropped', Cropped)
+
+    cv2.imshow('image', img)
+
+    '''          Database
+
+    # # Call the database and add the plate numbers
+    # database = database.Database(text)
+    # flag = database.connect()
+    #
+    #
+    #
+    # #open and close the gates
+    # if flag:
+    #     print(" Entered ")
+    #     #open the entrance gate
+    # elif not flag:
+    #     print(" Exited ")
+    #     #open the exit gate
+    #
+    #
+
+    # cv2.waitKey(0)  # maybee  will use
+    # cv2.destroyAllWindows()
+
+    '''
 
 cv2.destroyAllWindows()
 
 
-# #RE-SCALING
-# import cv2
-# cap = cv2.VideoCapture(0)
-# def rescale_frame(frame, percentage = 75):
-#     width = int(frame.shape[1] * percent / 100)
-#     height = int(frame.shape[0] * percent / 100)
-#     dim = (width, height)
-#     return cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
-# while True:
-#     frame, ret = cap.read()
-#     frame75 = rescale_frame(frame, percentage = 75)
-#     cv2.imshow('frame75', frame75)
-#     frame150 = rescale_frame(frame, percentage = 150)
-#     cv2.imshow('frame150', frame150)
-# if cv2.waitKey(0) and 0xFF == ord('q'):
-#     break
-# cap.release()
-# cv2.destroyAllWindows()
+
+#end
+
+''' REST SAMPLES ARE FOR MULTI THREADING '''
 
 
-
-
-
-
-
-
-
-
-
-'''2 version ( __main__) #threading'''
 
 import numpy as np
 import cv2
@@ -119,15 +172,6 @@ from threading import Thread, Event, ThreadError
 # cam = Cam(url)
 # print(cam)
 # cam.start()
-
-
-
-
-
-
-
-
-
 
 
 '''3 rd version ( __main__) #threading with multi camera examples but with an unnecessary GUI  '''
