@@ -2,7 +2,7 @@ from re import compile
 
 # number(s), -, 2 characters, -, number(s)
 # e.g: 10-BD-100
-default_format = compile('^[0-9]+-[a-zA-Z][a-zA-Z]-[0-9]+$')
+default_format = compile('^[0-9]+[ -][a-zA-Z][a-zA-Z][ -][0-9]+$')
 default_format_length = 9
 
 
@@ -35,7 +35,8 @@ def get_plate(given_text):
         row_result = contains_format(text_rows[i])
         if row_result != "":
             extracted_plates.append(row_result)
-    return extracted_plates
+
+    return list_to_string(extracted_plates)
 
 
 # converts a list into string

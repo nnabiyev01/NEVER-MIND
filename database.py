@@ -23,9 +23,7 @@ class Database:
                 mycursor = conn.cursor()
                 plate_num = (self.text)
 
-
-
-                #check whether to enter or exit
+                # check whether to enter or exit
 
                 check_database = ("""SELECT platenumberlist FROM
                  platenumbers where platenumberlist = (%s) LIMIT 1""")
@@ -37,9 +35,8 @@ class Database:
                 else:
                     flag = True
 
-
                 # add
-                #enter the garage
+                # enter the garage
                 if flag:
                     mySql_insert_query = """INSERT INTO platenumbers (platenumberlist)
                                              VALUES 
@@ -48,11 +45,10 @@ class Database:
                     mycursor.execute(mySql_insert_query, (plate_num,))
 
                 # delete
-                #exit the garage
+                # exit the garage
 
                 elif not flag:
                     mySql_Delete_query = """Delete from platenumbers where platenumberlist = (%s) """
-
 
                     mycursor.execute(mySql_Delete_query, (plate_num,))
                 conn.close()
@@ -66,7 +62,6 @@ class Database:
         finally:
             if conn is not None and conn.is_connected():
                 conn.close()
-
 
 
 """         Necessary params      """

@@ -5,6 +5,9 @@ import pytesseract
 import numpy as np
 from PIL import Image
 import imutils
+from text_plate_extractor import get_plate
+import time
+import database
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
@@ -72,44 +75,38 @@ while cam.isOpened():
         text = pytesseract.image_to_string(Cropped, config='--psm 11')
         # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
 
+        if get_plate(text):
+            time.sleep(15)  # maybe changed because we don't know the exact time the barrier opens and closes
+            database = database.Database(text)
+            flag = database.connect()
+            # open and close the gates
+            if flag:
+                # open the entrance gate
+                print(" Entered ")
+
+            elif not flag:
+                # open the exit gate
+                print(" Exited ")
+
         print(text)
         # print(test)
         cv2.imshow('Cropped', Cropped)
 
     cv2.imshow('image', img)
 
-    '''          Database
-
-    # # Call the database and add the plate numbers
-    # database = database.Database(text)
-    # flag = database.connect()
-    #
-    #
-    #
-    # #open and close the gates
-    # if flag:
-    #     print(" Entered ")
-    #     #open the entrance gate
-    # elif not flag:
-    #     print(" Exited ")
-    #     #open the exit gate
-    #
-    #
-
-    # cv2.waitKey(0)  # maybee  will use
-    # cv2.destroyAllWindows()
-
-    '''
-
 cv2.destroyAllWindows()
 
 
 
-#end
+
+
+
+
+
+
+# end
 
 ''' REST SAMPLES ARE FOR MULTI THREADING '''
-
-
 
 import numpy as np
 import cv2

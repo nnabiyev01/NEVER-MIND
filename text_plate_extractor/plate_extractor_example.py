@@ -9,6 +9,9 @@ pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesserac
 img = Image.open('plate_sample.jpg')
 image_text = pytesseract.image_to_string(img)
 
+
+
+
 # all data read from the image
 print("-----Original Image Text-----")
 print(image_text)
