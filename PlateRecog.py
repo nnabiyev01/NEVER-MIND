@@ -3,10 +3,11 @@ import imutils
 import numpy as np
 import pytesseract
 import database
+from text_plate_extractor import get_plate
 from PIL import Image
 
 
-img = cv2.imread('/home/nabi/Pictures/2.jpg', cv2.IMREAD_COLOR)
+img = cv2.imread('/home/nabi/Pictures/plate_img0.jpg', cv2.IMREAD_COLOR)
 
 img = cv2.resize(img, (620, 480))
 
@@ -61,6 +62,21 @@ Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
 # Read the number plate
 
 text = pytesseract.image_to_string(Cropped, config = '--psm 11')
+text = get_plate(text)
+if text:
+    ''' Database  '''
+    # Call the database and add the plate numbers
+    database = database.Database(text)
+    flag = database.connect()
+
+    # open and close the gates
+    if flag:
+        print(" Entered ")
+        # open the entrance gate
+    elif not flag:
+        print(" Exited ")
+        # open the exit gate
+
 # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
 
 #check all details
@@ -72,22 +88,7 @@ cv2.imshow('image', img)
 cv2.imshow('Cropped', Cropped)
 
 print(text)
-''' Database  '''
-# # Call the database and add the plate numbers
-# database = database.Database(text)
-# flag = database.connect()
-#
-#
-#
-# #open and close the gates
-# if flag:
-#     print(" Entered ")
-#     #open the entrance gate
-# elif not flag:
-#     print(" Exited ")
-#     #open the exit gate
-#
-#
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

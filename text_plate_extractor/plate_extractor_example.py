@@ -5,10 +5,8 @@ from PIL import Image
 from plate_extractor import get_plate
 
 pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
-
 img = Image.open('plate_sample.jpg')
 image_text = pytesseract.image_to_string(img)
-
 
 
 

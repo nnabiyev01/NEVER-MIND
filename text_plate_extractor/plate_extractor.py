@@ -36,7 +36,7 @@ def get_plate(given_text):
         if row_result != "":
             extracted_plates.append(row_result)
 
-    return list_to_string(extracted_plates)
+    return list_to_string(extracted_plates).replace("-", " ")
 
 
 # converts a list into string

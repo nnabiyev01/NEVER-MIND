@@ -11,6 +11,7 @@ import database
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
+# cam = cv2.VideoCapture(0)
 pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"  # your path may be different
 while cam.isOpened():
 
@@ -74,10 +75,10 @@ while cam.isOpened():
 
         text = pytesseract.image_to_string(Cropped, config='--psm 11')
         # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
-
-        if get_plate(text):
+        plate_text = get_plate(text).replace("-", " ")
+        if plate_text:
             time.sleep(15)  # maybe changed because we don't know the exact time the barrier opens and closes
-            database = database.Database(text)
+            database = database.Database(plate_text)
             flag = database.connect()
             # open and close the gates
             if flag:
