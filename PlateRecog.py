@@ -7,7 +7,7 @@ from text_plate_extractor import get_plate
 from PIL import Image
 
 
-img = cv2.imread('/home/nabi/Pictures/plate_img0.jpg', cv2.IMREAD_COLOR)
+img = cv2.imread('/home/nabi/Pictures/IMG_2470.jpg', cv2.IMREAD_COLOR)
 
 img = cv2.resize(img, (620, 480))
 
