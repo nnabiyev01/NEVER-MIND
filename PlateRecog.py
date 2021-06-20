@@ -60,8 +60,9 @@ new_image = cv2.bitwise_and(img, img, mask = mask)
 Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
 
 # Read the number plate
-
-text = pytesseract.image_to_string(Cropped, config = '--psm 11')
+character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
+text = pytesseract.image_to_string(Cropped, config="--psm 11"
+                                   "_char_whitelist=" + character_whitelist)
 text = get_plate(text)
 if text:
     ''' Database  '''
