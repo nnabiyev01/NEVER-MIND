@@ -7,7 +7,7 @@ from text_plate_extractor import get_plate
 from PIL import Image
 
 
-img = cv2.imread('/home/nabi/Pictures/IMG_2470.jpg', cv2.IMREAD_COLOR)
+img = cv2.imread('/home/nabi/Pictures/5.jpg', cv2.IMREAD_COLOR)
 
 img = cv2.resize(img, (620, 480))
 
@@ -47,48 +47,52 @@ else:
 if detected == 1:
     cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
 
-# Masking the part other than the number plate
-mask = np.zeros(gray.shape, np.uint8)
-new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1, )
-new_image = cv2.bitwise_and(img, img, mask = mask)
+    # Masking the part other than the number plate
+    mask = np.zeros(gray.shape, np.uint8)
+    new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1, )
+    new_image = cv2.bitwise_and(img, img, mask = mask)
 
 
-# Now crop
-(x, y) = np.where(mask == 255)
-(topx, topy) = (np.min(x), np.min(y))
-(bottomx, bottomy) = (np.max(x), np.max(y))
-Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
+    # Now crop
+    (x, y) = np.where(mask == 255)
+    (topx, topy) = (np.min(x), np.min(y))
+    (bottomx, bottomy) = (np.max(x), np.max(y))
+    Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
 
-# Read the number plate
-character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
-text = pytesseract.image_to_string(Cropped, config="--psm 11"
-                                   "_char_whitelist=" + character_whitelist)
-text = get_plate(text)
-if text:
-    ''' Database  '''
-    # Call the database and add the plate numbers
-    database = database.Database(text)
-    flag = database.connect()
 
-    # open and close the gates
-    if flag:
-        print(" Entered ")
-        # open the entrance gate
-    elif not flag:
-        print(" Exited ")
-        # open the exit gate
+    # Read the number plate
+    character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
+    text = pytesseract.image_to_string(Cropped, config="--psm 11"
+                                       "_char_whitelist=" + character_whitelist)
+    print(text)
+    text = get_plate(text)
+    print(text)
+
+    if text:
+        ''' Database  '''
+        # Call the database and add the plate numbers
+        database = database.Database(text)
+        flag = database.connect()
+
+        # open and close the gates
+        if flag:
+            print(" Entered ")
+            # open the entrance gate
+        elif not flag:
+            print(" Exited ")
+            # open the exit gate
+
+    cv2.imshow('Cropped', Cropped)
 
 # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
 
 #check all details
 # test = pytesseract.image_to_data(Cropped, config = '')
-print(text)
+
 # print(test)
 
 cv2.imshow('image', img)
-cv2.imshow('Cropped', Cropped)
 
-print(text)
 
 
 cv2.waitKey(0)

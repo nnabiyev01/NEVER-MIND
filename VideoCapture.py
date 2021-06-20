@@ -11,8 +11,15 @@ import database
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
-# cam = cv2.VideoCapture(0)
 pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"  # your path may be different
+
+focus = 0
+# change camera settings
+cam.set(cv2.CAP_PROP_SATURATION, -15)
+cam.set(cv2.CAP_PROP_GAIN, 12)
+cam.set(cv2.CAP_PROP_EXPOSURE, 1/500)  # set shutter speed longer better -> no blur but for cars less then 10km/h speed
+cam.set(28, focus)  #min: 0, max: 255, increment:5, the key 28 is for seting focus
+
 while cam.isOpened():
 
     ret, img = cam.read()
@@ -23,7 +30,7 @@ while cam.isOpened():
     img = cv2.resize(img, (620, 480))
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
-    # gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
+    # gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise #open to check
     kernel = np.ones((1, 1), np.uint8)
     gray = cv2.dilate(gray, kernel, iterations=1)
     gray = cv2.erode(gray, kernel, iterations=1)
@@ -75,6 +82,7 @@ while cam.isOpened():
         character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
         text = pytesseract.image_to_string(Cropped, config="--psm 11"
                                           "_char_whitelist=" + character_whitelist)
+
         # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
         plate_text = get_plate(text).replace("-", " ")
         if plate_text:
