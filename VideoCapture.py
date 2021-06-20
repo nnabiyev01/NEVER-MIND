@@ -72,8 +72,9 @@ while cam.isOpened():
         Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
 
         # Read the number plate
-
-        text = pytesseract.image_to_string(Cropped, config='--psm 11')
+        character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
+        text = pytesseract.image_to_string(Cropped, config="--psm 11"
+                                          "_char_whitelist=" + character_whitelist)
         # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
         plate_text = get_plate(text).replace("-", " ")
         if plate_text:
