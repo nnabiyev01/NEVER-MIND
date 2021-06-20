@@ -2,7 +2,7 @@ from re import compile
 
 # number(s), -, 2 characters, -, number(s)
 # e.g: 10-BD-100
-default_format = compile('^[0-9]+[ -][0a-zA-Z][0a-zA-Z][ -][0-9]+$')
+default_format = compile('^[0-9]+[ -][06a-zA-Z][06a-zA-Z][ -][0-9]+$')
 default_format_length = 9
 
 
@@ -28,19 +28,17 @@ def contains_format(string_sample, format_to_search=default_format,
 
 # returns a list of plates of matching format from the given text
 def get_plate(given_text):
-    text_rows = given_text.split('\n')
-    extracted_plates = []
+    extraction = ""
+    # grouping all extraction content on 1 line
+    given_text = given_text.replace("\n", " ")
 
-    for i in range(len(text_rows)):
-        row_result = contains_format(text_rows[i])
-        if row_result != "":
-            extracted_plates.append(row_result)
+    result = contains_format(given_text)
+    if result != "":
+        extraction = result
 
-    extraction = list_to_string(extracted_plates).replace("-", " ")
-    new_extraction = extraction[:3]
-    new_extraction += extraction[3:5].replace("0", "O")
-    new_extraction += extraction[5:]
-    return new_extraction
+    extraction = extraction.replace("-", " ")
+    extraction = extraction.replace(extraction[3:5], filter_plate(extraction[3:5], letter_filters))
+    return extraction
 
 
 # converts a list into string
@@ -49,3 +47,15 @@ def list_to_string(list_sample):
     for ele in list_sample:
         string += ele
     return string
+
+
+# letter filters are only used when changing the letter part the plate
+# 00 AA 000 -> "AA" will be affected
+letter_filters = [["0", "O"], ["6", "G"]]
+
+
+# adjusts misread characters to predicted corrections
+def filter_plate(given_text, filter_type):
+    for i in range(len(filter_type)):
+        given_text = given_text.replace(filter_type[i][0], filter_type[i][1])
+    return given_text
