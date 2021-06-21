@@ -2,7 +2,7 @@ from re import compile
 
 # number(s), -, 2 characters, -, number(s)
 # e.g: 10-BD-100
-default_format = compile('^[0-9]+[ -][06a-zA-Z][06a-zA-Z][ -][0-9]+$')
+default_format = compile('^[SOG0-9]+[ -][06a-zA-Z][06a-zA-Z][ -][SOG0-9]+$')
 default_format_length = 9
 
 
@@ -38,6 +38,8 @@ def get_plate(given_text):
 
     extraction = extraction.replace("-", " ")
     extraction = extraction.replace(extraction[3:5], filter_plate(extraction[3:5], letter_filters))
+    extraction = extraction.replace(extraction[:2], filter_plate(extraction[:2], number_filters))
+    extraction = extraction.replace(extraction[6:], filter_plate(extraction[6:], number_filters))
     return extraction
 
 
@@ -52,6 +54,7 @@ def list_to_string(list_sample):
 # letter filters are only used when changing the letter part the plate
 # 00 AA 000 -> "AA" will be affected
 letter_filters = [["0", "O"], ["6", "G"]]
+number_filters = [["O", "0"], ["G", "6"], ["S", "5"]]
 
 
 # adjusts misread characters to predicted corrections
