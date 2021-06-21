@@ -2,98 +2,108 @@ import cv2
 import imutils
 import numpy as np
 import pytesseract
-import database
-from text_plate_extractor import get_plate
-from PIL import Image
+from text_plate_extractor.plate_extractor import get_plate
+import image_filters
+import pandas
 
 
-img = cv2.imread('/home/nabi/Pictures/5.jpg', cv2.IMREAD_COLOR)
+# initialising and preparing image and gray_image
+def prepare_image(image_path):
+    local_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    local_img = cv2.resize(local_img, (620, 480))
 
-img = cv2.resize(img, (620, 480))
+    local_gray = cv2.cvtColor(local_img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
+    # gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
+    kernel = np.ones((1, 1), np.uint8)
+    local_gray = cv2.dilate(local_gray, kernel, iterations=1)
+    local_gray = cv2.erode(local_gray, kernel, iterations=1)
+    return local_img, local_gray
 
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
-# gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
-kernel = np.ones((1, 1), np.uint8)
-gray = cv2.dilate(gray, kernel, iterations=1)
-gray = cv2.erode(gray, kernel, iterations=1)
 
-edged = cv2.Canny(gray, 30, 200)  # Perform Edge detection
+# edge detection and marking using image and gray_image
+def edge_detection(given_image, given_gray_image):
+    edged = cv2.Canny(given_gray_image, 30, 200)  # Perform Edge detection
+    # find contours in the edged image, keep only the largest
+    # ones, and initialize our screen contour
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
+    local_screen_cnt = None
 
-# find contours in the edged image, keep only the largest
-# ones, and initialize our screen contour
-cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-cnts = imutils.grab_contours(cnts)
-cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
-screenCnt = None
+    # loop over our contours
+    for c in cnts:
+        # approximate the contour
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
 
-# loop over our contours
-for c in cnts:
-    # approximate the contour
-    peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+        # if our approximated contour has four points, then
+        # we can assume that we have found our screen
+        if len(approx) == 4:
+            local_screen_cnt = approx
+            break
 
-    # if our approximated contour has four points, then
-    # we can assume that we have found our screen
-    if len(approx) == 4:
-        screenCnt = approx
-        break
+    if local_screen_cnt is None:
+        print("No contour detected")
+        exit(-1)
+    else:
+        cv2.drawContours(given_image, [local_screen_cnt], -1, (0, 255, 0), 3)
+    return local_screen_cnt
 
-if screenCnt is None:
-    detected = 0
-    print("No contour detected")
-else:
-    detected = 1
 
-if detected == 1:
-    cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
-
+# getting mask based on detected edge
+def get_mask(given_image, given_gray_image, given_screen_cnt):
     # Masking the part other than the number plate
-    mask = np.zeros(gray.shape, np.uint8)
-    new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1, )
-    new_image = cv2.bitwise_and(img, img, mask = mask)
+    local_mask = np.zeros(given_gray_image.shape, np.uint8)
+    cv2.drawContours(local_mask, [given_screen_cnt], 0, 255, -1, )
+    cv2.bitwise_and(given_image, given_image, mask=local_mask)
+    return local_mask
 
 
-    # Now crop
-    (x, y) = np.where(mask == 255)
+# cropping the image based on given mask
+def get_crop(given_gray_image, given_mask):
+    (x, y) = np.where(given_mask == 255)
     (topx, topy) = (np.min(x), np.min(y))
     (bottomx, bottomy) = (np.max(x), np.max(y))
-    Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
+    return given_gray_image[topx:bottomx + 1, topy:bottomy + 1]
 
 
-    # Read the number plate
+# applying filter for the cropped image
+# enhances tesseracts readability
+def apply_filter(given_image):
+    given_image = image_filters.get_grayscale(given_image)
+    image_filters.remove_small_noise(given_image)
+    given_image = image_filters.get_invert(given_image)
+    given_image = image_filters.get_gaussian_blur(given_image)
+    return given_image
+
+
+# reading the plate number based on crop
+def read_plate_number(given_crop):
+    pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+    # string_whitelist = "C:/Program Files/Tesseract-OCR/tessdata/eng.user-patterns"
     character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
-    text = pytesseract.image_to_string(Cropped, config="--psm 11"
-                                       "_char_whitelist=" + character_whitelist)
-    print(text)
-    text = get_plate(text)
-    print(text)
 
-    if text:
-        ''' Database  '''
-        # Call the database and add the plate numbers
-        database = database.Database(text)
-        flag = database.connect()
-
-        # open and close the gates
-        if flag:
-            print(" Entered ")
-            # open the entrance gate
-        elif not flag:
-            print(" Exited ")
-            # open the exit gate
-
-    cv2.imshow('Cropped', Cropped)
-
-# text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
-
-#check all details
-# test = pytesseract.image_to_data(Cropped, config = '')
-
-# print(test)
-
-cv2.imshow('image', img)
+    text = pytesseract.image_to_string(given_crop, config="--psm 11 _char_whitelist=" + character_whitelist)
+                                                       # + " --user-patterns " + string_whitelist)
+    # print(pytesseract.image_to_data(Cropped, output_type='data.frame'))
+    return text, get_plate(text)
 
 
+""" Executed Tasks """
+# preparing, cropping, filtering the image for read
+image, gray_image = prepare_image("sample_image.jpg")
+screen_cnt = edge_detection(image, gray_image)
+mask = get_mask(image, gray_image, screen_cnt)
+cropped = get_crop(gray_image, mask)
+cropped = apply_filter(cropped)
 
+# reading the image
+extraction, plate_text = read_plate_number(cropped)
+print("---Extracted Text---\n" + extraction)
+print("---Plate Text---\n" + plate_text)
+
+# image display / collapse
+cv2.imshow('Image', image)
+cv2.imshow('Cropped', cropped)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
