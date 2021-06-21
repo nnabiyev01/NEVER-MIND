@@ -1,108 +1,37 @@
 '''version 1 __main2__'''
 
-import cv2
-import pytesseract
-import numpy as np
-from PIL import Image
-import imutils
-from text_plate_extractor import get_plate
-import time
-import database
+from PlateRecog import *
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
-pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"  # your path may be different
-
-focus = 0
 # change camera settings
+focus = 0
 cam.set(cv2.CAP_PROP_SATURATION, -15)
 cam.set(cv2.CAP_PROP_GAIN, 12)
-cam.set(cv2.CAP_PROP_EXPOSURE, 1/500)  # set shutter speed longer better -> no blur but for cars less then 10km/h speed
-cam.set(28, focus)  #min: 0, max: 255, increment:5, the key 28 is for seting focus
+cam.set(cv2.CAP_PROP_EXPOSURE, 1 / 500)  # set shutter speed longer better -> no blur but for cars less then 10km/h
+cam.set(28, focus)  # min: 0, max: 255, increment:5, the key 28 is for setting focus
 
 while cam.isOpened():
-
     ret, img = cam.read()
-
     if cv2.waitKey(10) == ord('q'):
         break
+    """ Executed Tasks """
+    # preparing, cropping, filtering the image for read
+    image, gray_image = prepare_image(img)
+    screen_cnt = edge_detection(image, gray_image)
+    if screen_cnt is not None:
+        mask = get_mask(image, gray_image, screen_cnt)
+        cropped = get_crop(gray_image, mask)
+        cropped = apply_filter(cropped)
+        # reading the image
+        extraction, plate_text = read_plate_number(cropped)
+        print("---Extracted Text---\n" + extraction)
+        print("---Plate Text---\n" + plate_text)
+        # cropped image display
+        cv2.imshow('Cropped', cropped)
 
-    img = cv2.resize(img, (620, 480))
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
-    # gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise #open to check
-    kernel = np.ones((1, 1), np.uint8)
-    gray = cv2.dilate(gray, kernel, iterations=1)
-    gray = cv2.erode(gray, kernel, iterations=1)
-
-    edged = cv2.Canny(gray, 30, 200)  # Perform Edge detection
-
-    # find contours in the edged image, keep only the largest
-    # ones, and initialize our screen contour
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
-    screenCnt = None
-
-    # loop over our contours
-    for c in cnts:
-        # approximate the contour
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
-
-        # if our approximated contour has four points, then
-        # we can assume that we have found our screen
-        if len(approx) == 4:
-            screenCnt = approx
-            break
-
-    if screenCnt is None:
-        detected = 0
-        print("No contour detected")
-
-    else:
-        detected = 1
-
-    if detected == 1:
-        cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
-
-    if detected == 1:
-        # Masking the part other than the number plate
-        mask = np.zeros(gray.shape, np.uint8)
-        new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1, )
-        new_image = cv2.bitwise_and(img, img, mask=mask)
-
-        # Now crop
-        (x, y) = np.where(mask == 255)
-        (topx, topy) = (np.min(x), np.min(y))
-        (bottomx, bottomy) = (np.max(x), np.max(y))
-        Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
-
-        # Read the number plate
-        character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
-        text = pytesseract.image_to_string(Cropped, config="--psm 11"
-                                          "_char_whitelist=" + character_whitelist)
-
-        # text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 11')
-        plate_text = get_plate(text).replace("-", " ")
-        if plate_text:
-            time.sleep(15)  # maybe changed because we don't know the exact time the barrier opens and closes
-            database = database.Database(plate_text)
-            flag = database.connect()
-            # open and close the gates
-            if flag:
-                # open the entrance gate
-                print(" Entered ")
-
-            elif not flag:
-                # open the exit gate
-                print(" Exited ")
-
-        print(text)
-        # print(test)
-        cv2.imshow('Cropped', Cropped)
-
-    cv2.imshow('image', img)
+    # image display
+    cv2.imshow('Image', image)
 
 cv2.destroyAllWindows()
 
@@ -110,9 +39,19 @@ cv2.destroyAllWindows()
 
 
 
-
-
-
+'''  Adjusting camera properties
+       key value
+cam.set(3 , 640  ) # width        
+cam.set(4 , 480  ) # height       
+cam.set(10, 120  ) # brightness     min: 0   , max: 255 , increment:1  
+cam.set(11, 50   ) # contrast       min: 0   , max: 255 , increment:1     
+cam.set(12, 70   ) # saturation     min: 0   , max: 255 , increment:1
+cam.set(13, 13   ) # hue         
+cam.set(14, 50   ) # gain           min: 0   , max: 127 , increment:1
+cam.set(15, -3   ) # exposure       min: -7  , max: -1  , increment:1
+cam.set(17, 5000 ) # white_balance  min: 4000, max: 7000, increment:1
+cam.set(28, 0    ) # focus          min: 0   , max: 255 , increment:5
+'''
 
 # end
 
