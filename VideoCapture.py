@@ -24,20 +24,35 @@ while cam.isOpened():
         cropped = get_crop(gray_image, mask)
         cropped = apply_filter(cropped)
         # reading the image
-        extraction, plate_text = read_plate_number(cropped)
-        print("---Extracted Text---\n" + extraction)
-        print("---Plate Text---\n" + plate_text)
+        dict = read_plate_number(cropped)
+
+        # output
+        wrong_extractions = []
+        plate_text, extraction = "00"
+        for k, v in dict.items():
+            if dict[k]:
+                extraction = k
+                plate_text = dict[k]
+                break
+            else:
+                wrong_extractions.append(k)
+                plate_text = v
+
+        if plate_text:
+            print("---Extracted Text---\n" + extraction)
+            print("---Plate Text---\n" + plate_text)
+        else:
+            print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
+            print("---Plate Text---\n" + plate_text)
+
         # cropped image display
         cv2.imshow('Cropped', cropped)
 
     # image display
     cv2.imshow('Image', image)
 
+
 cv2.destroyAllWindows()
-
-
-
-
 
 '''  Adjusting camera properties
        key value

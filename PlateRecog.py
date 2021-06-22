@@ -81,24 +81,54 @@ def read_plate_number(given_crop):
     pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
     # string_whitelist = "C:/Program Files/Tesseract-OCR/tessdata/eng.user-patterns"
     character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
-    text = pytesseract.image_to_string(given_crop, config="--psm 11 _char_whitelist=" + character_whitelist)
-    # + " --user-patterns " + string_whitelist)
-    print(pytesseract.image_to_data(given_crop, output_type='data.frame'))
-    return text, get_plate(text)
+
+    # text output option 1 -> use --psm11
+    text_opt1 = pytesseract.image_to_string(given_crop, lang='eng',
+                                            config="--psm 11 _char_whitelist=" + character_whitelist)
+    # + " --user-patterns " + string_whitelist))
+
+    # text output option 2
+    text_opt2 = pytesseract.image_to_string(given_crop, lang='eng', config="_char_whitelist=" + character_whitelist)
+
+    # check the statistics for each option
+    print(pytesseract.image_to_data(given_crop, lang='eng', config="--psm 11", output_type='data.frame'))
+    print(pytesseract.image_to_data(given_crop, lang='eng', output_type='data.frame'))
+
+    dict_of_options = {text_opt1: get_plate(text_opt1), text_opt2: get_plate(text_opt2)}
+
+    return dict_of_options
 
 
 """ Executed Tasks """
 # preparing, cropping, filtering the image for read
-image, gray_image = prepare_image("/home/nabi/Pictures/test2.jpg")
+image, gray_image = prepare_image("/home/nabi/Pictures/01.jpg")
 screen_cnt = edge_detection(image, gray_image)
 if screen_cnt is not None:
     mask = get_mask(image, gray_image, screen_cnt)
     cropped = get_crop(gray_image, mask)
     cropped = apply_filter(cropped)
     # reading the image
-    extraction, plate_text = read_plate_number(cropped)
-    print("---Extracted Text---\n" + extraction)
-    print("---Plate Text---\n" + plate_text)
+    dict = read_plate_number(cropped)
+
+    # output
+    wrong_extractions = []
+    plate_text, extraction = "00"
+    for k, v in dict.items():
+        if dict[k]:
+            extraction = k
+            plate_text = dict[k]
+            break
+        else:
+            wrong_extractions.append(k)
+            plate_text = v
+
+    if plate_text:
+        print("---Extracted Text---\n" + extraction)
+        print("---Plate Text---\n" + plate_text)
+    else:
+        print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
+        print("---Plate Text---\n" + plate_text)
+
     # cropped image display
     cv2.imshow('Cropped', cropped)
 
