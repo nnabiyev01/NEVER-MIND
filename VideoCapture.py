@@ -9,20 +9,22 @@ focus = 0
 cam.set(cv2.CAP_PROP_SATURATION, -15)
 cam.set(cv2.CAP_PROP_GAIN, 12)
 cam.set(cv2.CAP_PROP_EXPOSURE, 1 / 500)  # set shutter speed longer better -> no blur but for cars less then 10km/h
-cam.set(28, focus)  # min: 0, max: 255, increment:5, the key 28 is for setting focus
+cam.set(28, focus)  # min: 0, max: 255, increment:5,
+# the key 28 is for setting focus
 
 while cam.isOpened():
     ret, img = cam.read()
+
     if cv2.waitKey(10) == ord('q'):
         break
     """ Executed Tasks """
     # preparing, cropping, filtering the image for read
-    image, gray_image = prepare_image(img)
+    image, gray_image = prepare_image(img, False)
     screen_cnt = edge_detection(image, gray_image)
     if screen_cnt is not None:
         mask = get_mask(image, gray_image, screen_cnt)
         cropped = get_crop(gray_image, mask)
-        cropped = apply_filter(cropped)
+        # cropped = apply_filter(cropped)
         # reading the image
         dict = read_plate_number(cropped)
         # getting the correct text option
@@ -30,6 +32,7 @@ while cam.isOpened():
         if plate_text:
             print("---Extracted Text---\n" + extraction)
             print("---Plate Text---\n" + plate_text)
+            exit(1)
         else:
             print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
             print("---Plate Text---\n" + plate_text)
@@ -44,9 +47,9 @@ cv2.destroyAllWindows()
 
 '''  Adjusting camera properties
        key value
-cam.set(3 , 640  ) # width        
+cam.set(3 , 640  ) # width       
 cam.set(4 , 480  ) # height       
-cam.set(10, 120  ) # brightness     min: 0   , max: 255 , increment:1  
+cam.set(10, 120  ) # brightness     min: 0   , max: 255 , increment:1 
 cam.set(11, 50   ) # contrast       min: 0   , max: 255 , increment:1     
 cam.set(12, 70   ) # saturation     min: 0   , max: 255 , increment:1
 cam.set(13, 13   ) # hue         
@@ -63,7 +66,6 @@ cam.set(28, 0    ) # focus          min: 0   , max: 255 , increment:5
 import numpy as np
 import cv2
 import time
-import requests
 import threading
 from threading import Thread, Event, ThreadError
 

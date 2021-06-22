@@ -7,8 +7,11 @@ import image_filters
 
 
 # initialising and preparing image and gray_image
-def prepare_image(image_path):
-    local_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+def prepare_image(image_path, is_path):
+    if is_path:
+        local_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    else:
+        local_img = image_path
     local_img = cv2.resize(local_img, (620, 480))
 
     local_gray = cv2.cvtColor(local_img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
@@ -42,7 +45,6 @@ def edge_detection(given_image, given_gray_image):
             break
 
     if local_screen_cnt is None:
-        print("No contour detected")
         return None
     else:
         cv2.drawContours(given_image, [local_screen_cnt], -1, (0, 255, 0), 3)
@@ -114,30 +116,31 @@ def find_the_correct_text_option(sets):
     return image_to_text, plate_num, false_extract
 
 
-""" Executed Tasks """
-# preparing, cropping, filtering the image for read
-image, gray_image = prepare_image("/home/nabi/Pictures/b.jpg")
-screen_cnt = edge_detection(image, gray_image)
-if screen_cnt is not None:
-    mask = get_mask(image, gray_image, screen_cnt)
-    cropped = get_crop(gray_image, mask)
-    cropped = apply_filter(cropped)
-    # reading the image
-    dict = read_plate_number(cropped)
-    # getting the correct text option
-    extraction, plate_text, wrong_extractions = find_the_correct_text_option(dict)
-    if plate_text:
-        print("---Extracted Text---\n" + extraction)
-        print("---Plate Text---\n" + plate_text)
-    else:
-        print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
-        print("---Plate Text---\n" + plate_text)
+def execute():
+    """ Executed Tasks """
+    # preparing, cropping, filtering the image for read
+    image, gray_image = prepare_image("Azerbaijan-1.jpg", True)
+    screen_cnt = edge_detection(image, gray_image)
+    if screen_cnt is not None:
+        mask = get_mask(image, gray_image, screen_cnt)
+        cropped = get_crop(gray_image, mask)
+        cropped = apply_filter(cropped)
+        # reading the image
+        dict = read_plate_number(cropped)
+        # getting the correct text option
+        extraction, plate_text, wrong_extractions = find_the_correct_text_option(dict)
+        if plate_text:
+            print("---Extracted Text---\n" + extraction)
+            print("---Plate Text---\n" + plate_text)
+        else:
+            print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
+            print("---Plate Text---\n" + plate_text)
 
-    # cropped image display
-    cv2.imshow('Cropped', cropped)
+        # cropped image display
+        cv2.imshow('Cropped', cropped)
 
-# image display
-cv2.imshow('Image', image)
+    # image display
+    cv2.imshow('Image', image)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

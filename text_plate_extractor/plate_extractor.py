@@ -2,7 +2,7 @@ from re import compile
 
 # number(s), -, 2 characters, -, number(s)
 # e.g: 10-BD-100
-default_format = compile('^[SOG0-9]+[ -][06a-zA-Z][06a-zA-Z][ -][SOG0-9]+$')
+default_format = compile('^[SOG0-9]+[ -][062a-zA-Z][062a-zA-Z][ -][SOG0-9]+$')
 default_format_length = 9
 
 
@@ -53,7 +53,7 @@ def list_to_string(list_sample):
 
 # letter filters are only used when changing the letter part the plate
 # 00 AA 000 -> "AA" will be affected
-letter_filters = [["0", "O"], ["6", "G"]]
+letter_filters = [["0", "O"], ["6", "G"], ["2", "Z"]]
 number_filters = [["O", "0"], ["G", "6"], ["S", "5"]]
 
 
