@@ -99,9 +99,28 @@ def read_plate_number(given_crop):
     return dict_of_options
 
 
+def find_the_correct_text_option(sets):
+    false_extract = []
+    plate_num, image_to_text = "00"
+    count = 0
+    for k, v in sets.items():
+        if count > 0:
+            break
+        if sets[k]:
+            image_to_text = k
+            plate_num = sets[k]
+            count += 1
+            return image_to_text, plate_num, false_extract
+
+        else:
+            false_extract.append(k)
+            plate_num = v
+    return image_to_text, plate_num, false_extract
+
+
 """ Executed Tasks """
 # preparing, cropping, filtering the image for read
-image, gray_image = prepare_image("/home/nabi/Pictures/01.jpg")
+image, gray_image = prepare_image("/home/nabi/Pictures/03.jpg")
 screen_cnt = edge_detection(image, gray_image)
 if screen_cnt is not None:
     mask = get_mask(image, gray_image, screen_cnt)
@@ -109,19 +128,8 @@ if screen_cnt is not None:
     cropped = apply_filter(cropped)
     # reading the image
     dict = read_plate_number(cropped)
-
-    # output
-    wrong_extractions = []
-    plate_text, extraction = "00"
-    for k, v in dict.items():
-        if dict[k]:
-            extraction = k
-            plate_text = dict[k]
-            break
-        else:
-            wrong_extractions.append(k)
-            plate_text = v
-
+    # getting the correct text option
+    extraction, plate_text, wrong_extractions = find_the_correct_text_option(dict)
     if plate_text:
         print("---Extracted Text---\n" + extraction)
         print("---Plate Text---\n" + plate_text)

@@ -25,19 +25,8 @@ while cam.isOpened():
         cropped = apply_filter(cropped)
         # reading the image
         dict = read_plate_number(cropped)
-
-        # output
-        wrong_extractions = []
-        plate_text, extraction = "00"
-        for k, v in dict.items():
-            if dict[k]:
-                extraction = k
-                plate_text = dict[k]
-                break
-            else:
-                wrong_extractions.append(k)
-                plate_text = v
-
+        # getting the correct text option
+        extraction, plate_text, wrong_extractions = find_the_correct_text_option(dict)
         if plate_text:
             print("---Extracted Text---\n" + extraction)
             print("---Plate Text---\n" + plate_text)
@@ -50,7 +39,6 @@ while cam.isOpened():
 
     # image display
     cv2.imshow('Image', image)
-
 
 cv2.destroyAllWindows()
 
