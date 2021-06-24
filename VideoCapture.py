@@ -4,11 +4,13 @@ from PlateRecog import *
 
 cam = cv2.VideoCapture("rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0")
 
+
+
 # change camera settings
 # focus = 0
 # cam.set(cv2.CAP_PROP_SATURATION, -15)
 # cam.set(cv2.CAP_PROP_GAIN, 12)
-# cam.set(cv2.CAP_PROP_EXPOSURE, 1 / 500)  # set shutter speed longer better -> no blur but for cars less then 10km/h
+# cam.set(cv2.CAP_PROP_EXPOSURE, 1 / 50)  # set shutter speed longer better -> no blur but for cars less then 10km/h
 # cam.set(28, focus)  # min: 0, max: 255, increment:5,
 # the key 28 is for setting focus
 
@@ -32,6 +34,7 @@ while cam.isOpened():
         if plate_text:
             print("---Extracted Text---\n" + extraction)
             print("---Plate Text---\n" + plate_text)
+            breakpoint()
 
         else:
             print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))

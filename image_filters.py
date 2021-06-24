@@ -21,4 +21,10 @@ def get_grayscale(given_image):
 
 # removing small unnecessary noise from the image, clearing the image
 def remove_small_noise(given_image):
-    cv2.bilateralFilter(given_image, 11, 17, 17)
+    given_image = cv2.bilateralFilter(given_image, 11, 17, 17)
+    cnts = cv2.findContours(given_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts
+    for c in cnts:
+        area = cv2.contourArea(c)
+        if area < 10:
+            cv2.drawContours(given_image, [c], -1, 0, -1)
