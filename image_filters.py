@@ -9,7 +9,7 @@ def get_invert(given_image):
 
 # setting a gaussian blur
 def get_gaussian_blur(given_image):
-    given_image = cv2.GaussianBlur(given_image, (3, 3), 0)
+    given_image = cv2.GaussianBlur(given_image, (3, 3), 2)
     return given_image
 
 
@@ -21,9 +21,4 @@ def get_grayscale(given_image):
 
 # removing small unnecessary noise from the image, clearing the image
 def remove_small_noise(given_image):
-    cnts = cv2.findContours(given_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts
-    for c in cnts:
-        area = cv2.contourArea(c)
-        if area < 50:
-            cv2.drawContours(given_image, [c], -1, 0, -1)
+    cv2.bilateralFilter(given_image, 11, 17, 17)

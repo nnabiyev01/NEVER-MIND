@@ -16,6 +16,8 @@ def prepare_image(image_path, is_path):
 
     local_gray = cv2.cvtColor(local_img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
     # local_gray = cv2.bilateralFilter(local_gray, 11, 17, 17)  # Blur to reduce noise
+    # local_gray = cv2.equalizeHist(local_gray)  # histogram equalization
+
     kernel = np.ones((1, 1), np.uint8)
     local_gray = cv2.dilate(local_gray, kernel, iterations=1)
     local_gray = cv2.erode(local_gray, kernel, iterations=1)
@@ -24,23 +26,43 @@ def prepare_image(image_path, is_path):
 
 # edge detection and marking using image and gray_image
 def edge_detection(given_image, given_gray_image):
-    edged = cv2.Canny(given_gray_image, 30, 200)  # Perform Edge detection
+    # very imporant for square detection
+    blurred = cv2.GaussianBlur(given_gray_image, (3, 3), 0)
+    edged = cv2.Canny(blurred, 120, 255, 1)  # Perform Edge detection
     # find contours in the edged image, keep only the largest
     # ones, and initialize our screen contour
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
     local_screen_cnt = None
 
+    """CHECKING ALL THE CONTOURS
+    
+    # print("Number of Contours found : " + str(len(cnts)))
+    # for c in cnts:
+    #     x, y, w,  h = cv2.boundingRect(c)
+    #     print(x, y, w, h)
+    #
+    #     peri = cv2.arcLength(c, True)
+    #     approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+    #     local_screen_cnt = approx
+    #     cv2.drawContours(given_image, [local_screen_cnt], -1, (0, 255, 0), 3)
+    # return
+    
+     """
+
     # loop over our contours
     for c in cnts:
         # approximate the contour
+
+        x, y, w, h = cv2.boundingRect(c)
         peri = cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, 0.018 * peri, True)
 
         # if our approximated contour has four points, then
         # we can assume that we have found our screen
-        if len(approx) == 4:
+        if len(approx) and 1.2 < w / h < 6:
+            print(x, y, w, h)
             local_screen_cnt = approx
             break
 
@@ -81,6 +103,7 @@ def apply_filter(given_image):
 # reading the plate number based on crop
 def read_plate_number(given_crop):
     pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+    # print(pytesseract.get_tesseract_version())
     # string_whitelist = "C:/Program Files/Tesseract-OCR/tessdata/eng.user-patterns"
     character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
 
@@ -119,7 +142,7 @@ def find_the_correct_text_option(sets):
 def execute():
     """ Executed Tasks """
     # preparing, cropping, filtering the image for read
-    image, gray_image = prepare_image("Azerbaijan-1.jpg", True)
+    image, gray_image = prepare_image("test_data/image1.jpg", True)
     screen_cnt = edge_detection(image, gray_image)
     if screen_cnt is not None:
         mask = get_mask(image, gray_image, screen_cnt)
@@ -144,3 +167,6 @@ def execute():
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+execute()
