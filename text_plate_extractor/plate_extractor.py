@@ -1,8 +1,8 @@
 from re import compile
 
-# number(s), -, 2 characters, -, number(s)
+# 2 digits, -, 2 characters, -, 3 digits
 # e.g: 10-BD-100
-default_format = compile('^[SOG0-9]+[ -][062a-zA-Z][062a-zA-Z][ -][SOG0-9]+$')
+default_format = compile('^[SOG0-9]{2}[ -][026a-zA-Z]{2}[ -][SOG0-9]{3}$')
 default_format_length = 9
 
 
@@ -20,7 +20,6 @@ def contains_format(string_sample, format_to_search=default_format,
     for i in range(len(string_row)):
         if len(string_row) - i >= format_length:
             part_to_search = list_to_string(string_row[i:(i+format_length)])
-
             if matches_format(format_to_search, part_to_search):
                 return part_to_search
     return ""
@@ -37,8 +36,8 @@ def get_plate(given_text):
         extraction = result
 
     extraction = extraction.replace("-", " ")
-    extraction = extraction.replace(extraction[3:5], filter_plate(extraction[3:5], letter_filters))
     extraction = extraction.replace(extraction[:2], filter_plate(extraction[:2], number_filters))
+    extraction = extraction.replace(extraction[3:5], filter_plate(extraction[3:5], letter_filters))
     extraction = extraction.replace(extraction[6:], filter_plate(extraction[6:], number_filters))
     return extraction
 
