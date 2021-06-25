@@ -51,13 +51,33 @@ def edge_detection(given_image, given_gray_image):
     # return
 
      """
+
+    # for c in cnts:
+    #     # approximate the contour
+    #
+    #     x, y, w, h = cv2.boundingRect(c)
+    #     peri = cv2.arcLength(c, True)
+    #     approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+    #
+    #     # if our approximated contour has four points, then
+    #     # we can assume that we have found our screen
+    #     if len(approx) and 1.2 < w / h < 6:
+    #         print(x, y, w, h)
+    #         local_screen_cnt = approx
+    #         break
+    # if local_screen_cnt is None:
+    #     return None
+    # else:
+    #     cv2.drawContours(given_image, [local_screen_cnt], -1, (0, 255, 0), 3)
+    # return local_screen_cnt
+
     for c in cnts:
         rect = cv2.minAreaRect(c)  # Find the minimum enclosing rectangle center point, width and height, angle
         if rect[1][1] > rect[1][0]:
             k = rect[1][1] / rect[1][0]
         else:
             k = rect[1][0] / rect[1][1]
-        if (k > 1.2) & (k < 4):  # Judge the outline of the license plate
+        if (k > 1.2) & (k < 6):  # Judge the outline of the license plate
 
             a = cv2.boxPoints(rect)  # Get the four points of the bounding rectangle
             box = np.int0(a)
@@ -99,29 +119,43 @@ def apply_filter(given_image):
 
 # reading the plate number based on crop
 def read_plate_number(given_crop):
-    pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+    # pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
     # print(pytesseract.get_tesseract_version())
     # string_whitelist = "C:/Program Files/Tesseract-OCR/tessdata/eng.user-patterns"
     character_whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- "
 
     # text output option 1 -> use --psm11
-    text_opt1 = pytesseract.image_to_string(given_crop, lang='eng',
-                                            config="--psm 11 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVXYZ1234567890- ")
+    # text_opt1 = pytesseract.image_to_string(given_crop, lang='eng',
+    #                                         config="--psm 11 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVXYZ1234567890- ")
     # text_opt1 = pytesseract.image_to_string(given_crop, lang='eng',
     #                                         config="--psm 11 _char_whitelist=" + character_whitelist)
     # + " --user-patterns " + string_whitelist))
 
     # text output option 2
+
+    # text_opt1 = pytesseract.image_to_string(given_crop, lang='eng',
+    #                                         config="--psm 11 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVXYZ1234567890- ")
+
     text_opt2 = pytesseract.image_to_string(given_crop, lang='eng',
+                                            config="--psm 11 -c tessedit_char_whitelist"
+                                                   "=ABCDEFGHIJKLMNOPQRSTUVXYZ1234567890- ")
+
+    # text output option 3
+    text_opt3 = pytesseract.image_to_string(given_crop, lang='eng',
                                             config="-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVXYZ1234567890- ")
+
     # text_opt2 = pytesseract.image_to_string(given_crop, lang='eng', config="_char_whitelist=" + character_whitelist)
 
     # check the statistics for each option
-    print(pytesseract.image_to_data(given_crop, lang='eng', config="--psm 11", output_type='data.frame'))
+    # print(pytesseract.image_to_data(given_crop, lang='eng', config="--psm 11", output_type='data.frame'))
+    print(pytesseract.image_to_data(given_crop, lang='eng', config="--psm 8", output_type='data.frame'))
     print(pytesseract.image_to_data(given_crop, lang='eng', output_type='data.frame'))
 
-    dict_of_options = {text_opt1: get_plate(text_opt1), text_opt2: get_plate(text_opt2)}
+    dict_of_options = {
+                       text_opt2: get_plate(text_opt2),
+                       text_opt3: get_plate(text_opt3)}
 
+    # text_opt1: get_plate(text_opt1)
     return dict_of_options
 
 
@@ -143,7 +177,10 @@ def find_the_correct_text_option(sets):
 def execute():
     """ Executed Tasks """
     # preparing, cropping, filtering the image for read
-    image, gray_image = prepare_image("test_data/image12.jpg", True)
+    # image, gray_image = prepare_image("test_data/image8.jpg", True)
+
+    image, gray_image = prepare_image("test_data/image1.jpg", True)
+
     screen_cnt = edge_detection(image, gray_image)
     if screen_cnt is not None:
         mask = get_mask(image, gray_image, screen_cnt)
@@ -158,6 +195,7 @@ def execute():
             print("---Plate Text---\n" + plate_text)
 
         else:
+
             print("---Extracted Text---\n" + '  1st<-->2nd  '.join(str(x) for x in wrong_extractions))
             print("---Plate Text---\n" + plate_text)
 
@@ -170,5 +208,4 @@ def execute():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
-execute()
+# execute()
