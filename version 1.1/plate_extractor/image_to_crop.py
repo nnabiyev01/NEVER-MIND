@@ -1,7 +1,7 @@
 import cv2
 import imutils
 import numpy as np
-from plate_extractor.image_filters import apply_filter
+from image_filters import apply_filter
 
 
 # initialising and preparing image and gray_image

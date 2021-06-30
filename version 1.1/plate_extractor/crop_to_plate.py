@@ -1,5 +1,5 @@
 import pytesseract
-from plate_extractor.text_to_plate import get_plate
+from text_to_plate import get_plate
 
 
 # reading the plate number based on crop
@@ -41,7 +41,7 @@ def get_ocr_text(args):
 
 # returns image_to_data result for given parameters
 def get_ocr_data(args):
-    return pytesseract.image_to_data(args[0], lang=args[1], config=args[2])
+    return pytesseract.image_to_data(args[0], lang=args[1], config=args[2], output_type='data.frame')
 
 
 # compares and finds the correct plate text from given options

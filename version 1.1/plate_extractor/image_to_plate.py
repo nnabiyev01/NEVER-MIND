@@ -1,6 +1,6 @@
 import cv2
-from plate_extractor.image_to_crop import get_image_to_crop
-from plate_extractor.crop_to_plate import get_crop_to_plate
+from image_to_crop import get_image_to_crop
+from crop_to_plate import get_crop_to_plate
 
 
 # returns extracted plate from given image
