@@ -14,7 +14,7 @@ public class Utility {
     }
 
     public static int getId(String filename) {
-        int currentLastId =  0;
+        int currentLastId = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String lastLine = "";
             String line;
@@ -34,5 +34,5 @@ public class Utility {
         return currentLastId;
     }
 
-
 }
+

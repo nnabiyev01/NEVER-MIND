@@ -15,7 +15,7 @@ public class UserController {
     }
 
     //Create new account
-    public String createAccount(String username, String password) {
+    public String createAccount(String username, String password, String licensePlate) {
         String result = "false|Error";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line = br.readLine();
@@ -38,7 +38,7 @@ public class UserController {
         }
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(filename, true))) {
-            User user = new User(username, password);
+            User user = new User(username, password, licensePlate);
             pw.println(user.toString());
             result = String.format("true|%s", user.toString());
         } catch (IOException e) {

@@ -1,4 +1,5 @@
 import Views.*;
+import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ public class Client implements ActionListener, MouseListener, Runnable {
     SignUpGUI signUpGUI;
     String username;
     String password;
+    MainGUI mainGUI;
     boolean start = true;
     private static Scanner in;
     private static PrintWriter pw;
@@ -42,6 +44,7 @@ public class Client implements ActionListener, MouseListener, Runnable {
         loginGUI = new LoginGUI();
         signUpGUI = new SignUpGUI();
         if (start) {
+            mainGUI = new MainGUI();
 
             System.out.print("entered");
 
@@ -126,6 +129,8 @@ public class Client implements ActionListener, MouseListener, Runnable {
             String passwordCreate;
             passwordCreate = String.valueOf(signUpGUI.getPasswordText().getPassword());
             System.out.println("Password created! " + passwordCreate);
+
+            String licensePLate = signUpGUI.getLicensePlateLogin().getText();
             // checking if empty
             if (passwordCreate.isEmpty() || usernameCreate.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Empty Field",
@@ -134,7 +139,7 @@ public class Client implements ActionListener, MouseListener, Runnable {
 
                 // sending the data to server
                 pw.println("/SignUp");
-                pw.println(usernameCreate + "|" + passwordCreate);
+                pw.println(usernameCreate + "|" + passwordCreate + "|" + licensePLate);
                 pw.flush();
 
                 String[] response = in.nextLine().split("\\|");
@@ -147,6 +152,7 @@ public class Client implements ActionListener, MouseListener, Runnable {
                             "Welcome", JOptionPane.INFORMATION_MESSAGE);
                     username = user[0].replace("\\,/", ",");
                     password = user[1].replace("\\,/", ",");
+                    mainGUI.getFrame().setVisible(true);
 
                 } else {
                     JOptionPane.showMessageDialog(null, response[1],
@@ -192,12 +198,16 @@ public class Client implements ActionListener, MouseListener, Runnable {
                 password = user[1].replace("\\,/", ",");
                 loginGUI.getUsernameLogin().setText("");
                 loginGUI.getPasswordLogin().setText("");
+                loginGUI.getFrame().setVisible(false);
+                mainGUI.getFrame().setVisible(true);
+
             } else {
                 JOptionPane.showMessageDialog(null, response[1],
                         "Welcome", JOptionPane.ERROR_MESSAGE);
                 // Clear all text fields in Login GUI
                 loginGUI.getUsernameLogin().setText("");
                 loginGUI.getPasswordLogin().setText("");
+
             }
         }
     }

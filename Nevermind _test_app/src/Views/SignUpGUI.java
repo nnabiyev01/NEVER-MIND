@@ -2,9 +2,6 @@ package Views;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Vector;
 
 
 public class SignUpGUI extends JFrame {
@@ -101,6 +98,14 @@ public class SignUpGUI extends JFrame {
     public JTextField getUsernameText() {
         return usernameSignUp;
     }
+
+
+    public JTextField getLicensePlateLogin() {
+        return licensePlateLogin;
+    }
+
+
+
 
     public JPasswordField getPasswordText() {
         return passwordSignUp;

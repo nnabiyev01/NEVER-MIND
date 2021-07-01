@@ -1,5 +1,4 @@
 import Controllers.UserController;
-import Controllers.LicensePlateController;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,8 +51,9 @@ public class Server implements Runnable {
                         parameters = in.nextLine().replace(",", "\\,/").split("\\|");
                         name = parameters[0];
                         password = parameters[1];
+                        String licensePlate = parameters[2];
 
-                        response = userController.createAccount(name, password);
+                        response = userController.createAccount(name, password, licensePlate);
                         pw.println(response);
                         break;
 
