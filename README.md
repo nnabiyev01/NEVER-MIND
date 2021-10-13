@@ -8,7 +8,7 @@ Why did we do it?
 Nowadays, there are license plate recognition cameras which are specifically designed for capturing plate numbers. A customer has no other choice but to buy that highly-price cameras to satisfy their purpose. To combat this problem, we decided to write a program which will turn any camera to a smart one.  
 
 How did we do it?
-          1. post-Processing 
+          1. Post-Processing 
           2. Pre-Processing 
           3. Testing
 
