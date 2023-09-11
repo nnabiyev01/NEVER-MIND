@@ -1,7 +1,6 @@
 # NEVER-MIND
 
-Never Mind is a license plate recognition program that recognizes the plate number of any car anytime. There is an already built-in program for capturing text from an image which is called a tesseract. However, as that program is not designed specifically for that purpose, the success rate with just testing tesseract was less than 5% and the average capture time was more than 10 seconds. After our additions, the success rate went up to 90 percent and the average capture time was less than 2 seconds. 
-
+Never Mind is a  smart parking app, and one of its key features is an advanced license plate recognition program that can identify the plate number of any car in real-time. There is an already built-in program for capturing text from an image which is called a tesseract. However, as that program is not designed specifically for that purpose, the success rate with just testing tesseract was less than 5% and the average capture time was more than 10 seconds. After our additions, the success rate went up to 90 percent and the average capture time was less than 2 seconds. 
 
 Why did we do it? 
 
