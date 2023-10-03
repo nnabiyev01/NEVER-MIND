@@ -1,16 +1,23 @@
-# NEVER-MIND
+# NEVER-MIND: The Future of Smart Parking
 
-Never Mind is a  smart parking app, and one of its key features is an advanced license plate recognition program that can identify the plate number of any car in real-time. There is an already built-in program for capturing text from an image which is called a tesseract. However, as that program is not designed specifically for that purpose, the success rate with just testing tesseract was less than 5% and the average capture time was more than 10 seconds. After our additions, the success rate went up to 90 percent and the average capture time was less than 2 seconds. 
+NEVER-MIND is a state-of-the-art smart parking solution that redefines the parking experience. Say goodbye to manual interactions with parking barriers; with NEVER-MIND, everything is automated.
 
-Why did we do it? 
+Overview
+Utilizing the power of CCTV cameras, NEVER-MIND employs an advanced license plate recognition system that detects vehicle plate numbers in real-time. This triggers an automatic response, unlocking the parking barrier without any manual intervention.
 
-Nowadays, there are license plate recognition cameras which are specifically designed for capturing plate numbers. A customer has no other choice but to buy that highly-price cameras to satisfy their purpose. To combat this problem, we decided to write a program which will turn any camera to a smart one.  
+While the foundation of our system is built on the Tesseract program, which captures text from images, we've enhanced its capabilities significantly. The initial success rate with Tesseract alone was a mere 5%, with an average capture time exceeding 10 seconds. Post our enhancements, we've achieved a staggering 90% success rate, slashing the capture time to under 2 seconds.
 
-How did we do it?
-          1. Post-Processing 
-          2. Pre-Processing 
-          3. Testing
+Why NEVER-MIND?
+In today's market, specialized license plate recognition cameras are available but come with a hefty price tag. Our vision was to democratize this technology, enabling any standard camera to be transformed into a smart license plate recognition system. With NEVER-MIND, you don't need to invest in expensive hardware; our software does the magic.
 
-The part that we mostly devoted time to be the post-processing section. We used different cropping, image filtering techniques for the program to easily capture the license plate number of the car.  For the pre-processing, we added license plate specifications for each country so that it would be easier for tesseract to find the plate number. We also added character whitelist that only lets tesseract to guess from the specified range of letters and digits. Let’s assume that one uses our program in an app which is designed to automatically allow the cars in the parking spot. When the person gets registered, he/she must enter the country where his/her car plate from. Thus, the program for this user will be implemented under the specifications/conditions of that country. We also used a lot of testing, to get the result what we wanted. The videos are attached in our GitHub, you can use the testing to check the results. 
+How We Achieved This
+Our journey to perfection was three-fold:
 
+Post-Processing: This was our primary focus. We employed various cropping and image filtering techniques to enhance the clarity and visibility of license plates, making it easier for the system to recognize them.
 
+Pre-Processing: We incorporated license plate specifications for different countries. This tailoring, combined with a character whitelist, optimized Tesseract's recognition capabilities. For instance, when a user registers, they specify their vehicle's country of registration. The system then uses the specific conditions of that country to enhance recognition accuracy.
+
+Testing: Rigorous testing was the key to our success. We've documented our testing process and results extensively. For a visual representation, we've uploaded videos on our GitHub repository showcasing the system in action.
+
+See It In Action
+We invite you to witness the efficiency of NEVER-MIND. Check out our testing videos on our GitHub repository and experience the future of smart parking.
